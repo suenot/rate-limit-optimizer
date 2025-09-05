@@ -491,7 +491,8 @@ class MultiTierDetector:
             total_requests=sum(r.requests_sent for r in tested_limits),
             test_duration_seconds=time.time() - start_time,
             tier_results=tested_limits,
-            endpoints_tested=[endpoint]
+            endpoints_tested=[endpoint],
+            confidence_score=0.8  # Базовая уверенность
         )
         
         # Распределяем лимиты по уровням

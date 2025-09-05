@@ -5,14 +5,15 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, Any, Optional, List
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 import logging
 
 from .models import (
     TargetSite, DetectionSettings, OptimizationStrategy, AISettings,
     ResultsStorage, MonitoringConfig, RetryPolicy, LoggingConfig, NetworkConfig,
     MultiTierRampStrategy, HeaderAnalysisStrategy, IntelligentProbingStrategy,
-    AuthConfig, AuthType
+    AuthConfig, AuthType, RateLimitTier, MultiTierDetection, BatchSettings,
+    SafetySettings, EndpointRotation
 )
 
 logger = logging.getLogger(__name__)
@@ -33,13 +34,15 @@ class Config(BaseModel):
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
     network: NetworkConfig = Field(default_factory=NetworkConfig)
     
-    @validator('target_sites')
+    @field_validator('target_sites')
+    @classmethod
     def validate_target_sites_not_empty(cls, v):
         if not v:
             raise ValueError('Должен быть указан хотя бы один целевой сайт')
         return v
     
-    @validator('optimization_strategies')
+    @field_validator('optimization_strategies')
+    @classmethod
     def validate_optimization_strategies(cls, v):
         """Валидация стратегий оптимизации"""
         valid_strategies = ['multi_tier_ramp', 'header_analysis', 'intelligent_probing']

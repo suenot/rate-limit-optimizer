@@ -10,8 +10,8 @@ from unittest.mock import patch, MagicMock
 import aiohttp
 from pydantic import ValidationError
 
-from rate_limit_optimizer.config import (
-    Config,
+from rate_limit_optimizer.config import Config, ConfigManager
+from rate_limit_optimizer.models import (
     TargetSite,
     RateLimitTier,
     DetectionSettings,

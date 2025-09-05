@@ -4,7 +4,7 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union
 from enum import Enum
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class AuthType(str, Enum):
@@ -38,10 +38,11 @@ class RateLimit(BaseModel):
     window_seconds: int = Field(..., gt=0, description="Временное окно в секундах")
     detected_via: DetectionMethod = Field(..., description="Метод определения лимита")
     
-    @validator('remaining')
-    def remaining_not_greater_than_limit(cls, v, values):
-        if 'limit' in values and v > values['limit']:
-            return values['limit']  # Исправляем противоречие
+    @field_validator('remaining')
+    @classmethod
+    def remaining_not_greater_than_limit(cls, v, info):
+        if info.data and 'limit' in info.data and v > info.data['limit']:
+            return info.data['limit']  # Исправляем противоречие
         return v
     
     @property
@@ -62,7 +63,7 @@ class RateLimit(BaseModel):
 
 class RateLimitTier(BaseModel):
     """Конфигурация уровня тестирования rate limit"""
-    name: str = Field(..., regex=r'^(10_seconds|minute|15_minutes|hour|day)$')
+    name: str = Field(..., pattern=r'^(10_seconds|minute|15_minutes|hour|day)$')
     window_seconds: int = Field(..., gt=0)
     start_rate: int = Field(..., gt=0)
     max_rate: int = Field(..., gt=0)
@@ -72,21 +73,18 @@ class RateLimitTier(BaseModel):
     aggressive_testing: bool = Field(False)
     adaptive_increment: bool = Field(False)
     
-    @validator('max_rate')
-    def max_rate_greater_than_start_rate(cls, v, values):
-        if 'start_rate' in values and v <= values['start_rate']:
+    @field_validator('max_rate')
+    @classmethod
+    def max_rate_greater_than_start_rate(cls, v, info):
+        if info.data and 'start_rate' in info.data and v <= info.data['start_rate']:
             raise ValueError('max_rate должен быть больше start_rate')
         return v
     
-    @root_validator
-    def duration_specified(cls, values):
-        duration_minutes = values.get('test_duration_minutes')
-        duration_hours = values.get('test_duration_hours')
-        
-        if not duration_minutes and not duration_hours:
+    @model_validator(mode='after')
+    def duration_specified(self):
+        if not self.test_duration_minutes and not self.test_duration_hours:
             raise ValueError('Должна быть указана длительность тестирования')
-        
-        return values
+        return self
     
     @property
     def test_duration_seconds(self) -> float:
@@ -177,10 +175,10 @@ class MultiTierResult(BaseModel):
 class RecommendationAnalysis(BaseModel):
     """Анализ и рекомендации от AI"""
     optimal_usage_strategy: str
-    implementation_patterns: List[str] = Field(min_items=1)
-    error_handling_advice: List[str] = Field(min_items=1)
-    monitoring_suggestions: List[str] = Field(min_items=1)
-    scaling_recommendations: List[str] = Field(min_items=1)
+    implementation_patterns: List[str] = Field(min_length=1)
+    error_handling_advice: List[str] = Field(min_length=1)
+    monitoring_suggestions: List[str] = Field(min_length=1)
+    scaling_recommendations: List[str] = Field(min_length=1)
 
 
 class AIRecommendations(BaseModel):
@@ -202,7 +200,7 @@ class DetectionResult(BaseModel):
     ai_recommendations: Optional[AIRecommendations] = None
     detection_strategy: str
     total_test_duration_hours: float = Field(ge=0)
-    endpoints_tested: List[str] = Field(min_items=1)
+    endpoints_tested: List[str] = Field(min_length=1)
     success_rate: float = Field(ge=0, le=1)
     detection_methods: List[str] = Field(default_factory=list)
 
@@ -219,12 +217,13 @@ class AuthConfig(BaseModel):
 
 class TargetSite(BaseModel):
     """Конфигурация целевого сайта"""
-    base_url: str = Field(..., regex=r'^https?://')
-    endpoints: List[str] = Field(min_items=1)
+    base_url: str = Field(..., pattern=r'^https?://')
+    endpoints: List[str] = Field(min_length=1)
     headers: Dict[str, str] = Field(default_factory=dict)
     auth: AuthConfig
     
-    @validator('headers')
+    @field_validator('headers')
+    @classmethod
     def validate_safe_headers(cls, v):
         """Проверка безопасности заголовков"""
         user_agent = v.get('User-Agent', '')
@@ -264,7 +263,7 @@ class MultiTierDetection(BaseModel):
     """Настройки многоуровневого определения"""
     enabled: bool = Field(default=True)
     test_all_tiers: bool = Field(default=False)
-    tiers_to_test: List[RateLimitTier] = Field(min_items=1)
+    tiers_to_test: List[RateLimitTier] = Field(min_length=1)
 
 
 class DetectionSettings(BaseModel):
@@ -286,7 +285,7 @@ class OptimizationStrategy(BaseModel):
 
 class MultiTierRampStrategy(OptimizationStrategy):
     """Стратегия многоуровневого тестирования"""
-    tier_order: List[str] = Field(min_items=1)
+    tier_order: List[str] = Field(min_length=1)
     parallel_testing: bool = Field(default=False)
     stop_on_first_limit: bool = Field(default=True)
     adaptive_increment: bool = Field(default=True)
@@ -389,7 +388,7 @@ class RetryResult(BaseModel):
     success: bool
     attempts_made: int = Field(ge=1)
     final_response: Optional[Dict[str, Any]] = None
-    final_error: Optional[Exception] = None
+    final_error: Optional[str] = None
     total_duration: float = Field(ge=0)
     retry_reasons: List[str] = Field(default_factory=list)
 
