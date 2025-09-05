@@ -159,6 +159,9 @@ python -m rate_limit_optimizer.config --migrate old_config.json new_config.json
 
 # Проверка совместимости
 python -m rate_limit_optimizer.config --check-compatibility config.json
+
+# Обновление заголовков для маскировки (замена палевных User-Agent)
+python -m rate_limit_optimizer.config --update-headers config.json
 ```
 
 ### Симуляция и тестирование нагрузки
