@@ -1,0 +1,223 @@
+{
+  "version": "1.0.0",
+  "description": "Rate Limit Optimizer - подгонка лимитов под сайт",
+  
+  "target_sites": {
+    "upbit_api": {
+      "base_url": "https://api.upbit.com",
+      "endpoints": [
+        "/v1/market/all",
+        "/v1/ticker",
+        "/v1/orderbook"
+      ],
+      "headers": {
+        "User-Agent": "RateLimitOptimizer/1.0",
+        "Accept": "application/json"
+      },
+      "auth": {
+        "type": "none"
+      }
+    },
+    "binance_api": {
+      "base_url": "https://api.binance.com",
+      "endpoints": [
+        "/api/v3/ticker/price",
+        "/api/v3/depth",
+        "/api/v3/klines"
+      ],
+      "headers": {
+        "User-Agent": "RateLimitOptimizer/1.0"
+      },
+      "auth": {
+        "type": "none"
+      }
+    },
+    "custom_site": {
+      "base_url": "https://example.com",
+      "endpoints": [
+        "/api/data",
+        "/api/status"
+      ],
+      "headers": {
+        "User-Agent": "RateLimitOptimizer/1.0"
+      },
+      "auth": {
+        "type": "api_key",
+        "api_key_header": "X-API-Key",
+        "api_key_env": "CUSTOM_API_KEY"
+      }
+    }
+  },
+  
+  "detection_settings": {
+    "multi_tier_detection": {
+      "enabled": true,
+      "test_all_tiers": true,
+      "tiers_to_test": [
+        {
+          "name": "minute",
+          "window_seconds": 60,
+          "start_rate": 1,
+          "max_rate": 1000,
+          "increment": 5,
+          "test_duration_minutes": 5
+        },
+        {
+          "name": "15_minutes", 
+          "window_seconds": 900,
+          "start_rate": 10,
+          "max_rate": 5000,
+          "increment": 50,
+          "test_duration_minutes": 20
+        },
+        {
+          "name": "hour",
+          "window_seconds": 3600,
+          "start_rate": 50,
+          "max_rate": 50000,
+          "increment": 200,
+          "test_duration_minutes": 90
+        },
+        {
+          "name": "day",
+          "window_seconds": 86400,
+          "start_rate": 1000,
+          "max_rate": 1000000,
+          "increment": 5000,
+          "test_duration_hours": 25
+        }
+      ]
+    },
+    "batch_settings": {
+      "requests_per_batch": 10,
+      "batch_interval_seconds": 30,
+      "adaptive_batching": true
+    },
+    "safety_settings": {
+      "safety_margin_percent": 20,
+      "backoff_multiplier": 2.0,
+      "max_consecutive_errors": 3,
+      "cooldown_after_limit_minutes": 5
+    },
+    "success_threshold": 0.95,
+    "error_codes_to_detect": [429, 503, 502, 420],
+    "rate_limit_headers": [
+      "X-RateLimit-Limit",
+      "X-RateLimit-Remaining", 
+      "X-RateLimit-Reset",
+      "X-RateLimit-Window",
+      "X-Rate-Limit-Limit-Minute",
+      "X-Rate-Limit-Limit-Hour", 
+      "X-Rate-Limit-Limit-Day",
+      "X-Rate-Limit-Remaining-Minute",
+      "X-Rate-Limit-Remaining-Hour",
+      "X-Rate-Limit-Remaining-Day",
+      "Retry-After"
+    ]
+  },
+  
+  "optimization_strategies": {
+    "multi_tier_ramp": {
+      "enabled": true,
+      "description": "Многоуровневое тестирование всех временных окон",
+      "tier_order": ["minute", "15_minutes", "hour", "day"],
+      "parallel_testing": false,
+      "stop_on_first_limit": false,
+      "adaptive_increment": true
+    },
+    "header_analysis": {
+      "enabled": true,
+      "description": "Анализ заголовков для определения всех лимитов",
+      "trust_headers": true,
+      "verify_with_testing": true,
+      "safety_margin_percent": 20,
+      "parse_multiple_limits": true,
+      "header_patterns": {
+        "minute": ["minute", "min", "60"],
+        "hour": ["hour", "hr", "3600"],
+        "day": ["day", "daily", "86400"]
+      }
+    },
+    "intelligent_probing": {
+      "enabled": true,
+      "description": "Умное зондирование с учетом найденных лимитов",
+      "start_with_shortest_window": true,
+      "respect_discovered_limits": true,
+      "cross_tier_validation": true
+    }
+  },
+  
+  "results_storage": {
+    "save_results": true,
+    "output_format": "json",
+    "output_file": "rate_limit_results.json",
+    "append_timestamp": true,
+    "save_detailed_logs": true
+  },
+  
+  "monitoring": {
+    "log_requests": true,
+    "log_responses": true,
+    "log_rate_changes": true,
+    "verbose_output": false,
+    "progress_updates": true,
+    "real_time_stats": true
+  },
+  
+  "retry_policies": {
+    "max_retries": 3,
+    "base_delay": 1.0,
+    "backoff_multiplier": 2.0,
+    "max_delay": 30.0,
+    "retry_on_codes": [429, 502, 503, 504],
+    "retry_on_timeout": true
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": "rate_limit_optimizer.log",
+    "console_output": true
+  },
+  
+  "network": {
+    "timeout": 30,
+    "max_concurrent_requests": 10,
+    "user_agent": "RateLimitOptimizer/1.0",
+    "verify_ssl": true,
+    "follow_redirects": true
+  },
+  
+  "ai_recommendations": {
+    "enabled": true,
+    "provider": "openrouter",
+    "model": "anthropic/claude-3.5-sonnet",
+    "api_key_env": "OPENROUTER_API_KEY",
+    "base_url": "https://openrouter.ai/api/v1",
+    "settings": {
+      "temperature": 0.1,
+      "max_tokens": 2000,
+      "top_p": 0.9
+    },
+    "prompt_template": {
+      "system_prompt": "Ты эксперт по оптимизации API rate limits. Анализируй результаты тестирования и давай практические рекомендации для разработчиков.",
+      "include_context": {
+        "api_type": true,
+        "detected_limits": true,
+        "test_duration": true,
+        "error_patterns": true,
+        "headers_analysis": true
+      }
+    },
+    "recommendation_types": [
+      "optimal_usage_strategy",
+      "implementation_patterns", 
+      "error_handling_advice",
+      "monitoring_suggestions",
+      "scaling_recommendations"
+    ],
+    "fallback_on_error": true,
+    "cache_recommendations": true,
+    "cache_ttl_hours": 24
+  }
+}
