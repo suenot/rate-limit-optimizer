@@ -24,54 +24,25 @@
   "detection_settings": {
     "multi_tier_detection": {
       "enabled": true,
-      "test_all_tiers": true,
+      "test_all_tiers": false,
       "tiers_to_test": [
         {
           "name": "10_seconds",
           "window_seconds": 10,
           "start_rate": 1,
-          "max_rate": 50,
-          "increment": 1,
-          "test_duration_minutes": 1
-        },
-        {
-          "name": "minute",
-          "window_seconds": 60,
-          "start_rate": 1,
-          "max_rate": 1000,
-          "increment": 5,
-          "test_duration_minutes": 5
-        },
-        {
-          "name": "15_minutes", 
-          "window_seconds": 900,
-          "start_rate": 10,
-          "max_rate": 5000,
-          "increment": 50,
-          "test_duration_minutes": 20
-        },
-        {
-          "name": "hour",
-          "window_seconds": 3600,
-          "start_rate": 50,
-          "max_rate": 50000,
-          "increment": 200,
-          "test_duration_minutes": 90
-        },
-        {
-          "name": "day",
-          "window_seconds": 86400,
-          "start_rate": 1000,
-          "max_rate": 1000000,
-          "increment": 5000,
-          "test_duration_hours": 25
+          "max_rate": 100,
+          "increment": 2,
+          "test_duration_minutes": 1,
+          "aggressive_testing": true,
+          "description": "Быстрое определение 10-секундного лимита за 1 минуту"
         }
       ]
     },
     "batch_settings": {
-      "requests_per_batch": 10,
-      "batch_interval_seconds": 30,
-      "adaptive_batching": true
+      "requests_per_batch": 5,
+      "batch_interval_seconds": 2,
+      "adaptive_batching": true,
+      "fast_mode": true
     },
     "endpoint_rotation": {
       "enabled": true,
@@ -82,12 +53,13 @@
       "description": "Ротация endpoints для имитации реального трафика и избежания детекции"
     },
     "safety_settings": {
-      "safety_margin_percent": 20,
-      "backoff_multiplier": 2.0,
-      "max_consecutive_errors": 3,
-      "cooldown_after_limit_minutes": 5
+      "safety_margin_percent": 10,
+      "backoff_multiplier": 1.5,
+      "max_consecutive_errors": 2,
+      "cooldown_after_limit_seconds": 15,
+      "fast_detection_mode": true
     },
-    "success_threshold": 0.95,
+    "success_threshold": 0.90,
     "error_codes_to_detect": [429, 503, 502, 420],
     "rate_limit_headers": [
       "X-RateLimit-Limit",
@@ -108,9 +80,9 @@
     "multi_tier_ramp": {
       "enabled": true,
       "description": "Многоуровневое тестирование всех временных окон",
-      "tier_order": ["10_seconds", "minute", "15_minutes", "hour", "day"],
+      "tier_order": ["10_seconds"],
       "parallel_testing": false,
-      "stop_on_first_limit": false,
+      "stop_on_first_limit": true,
       "adaptive_increment": true
     },
     "header_analysis": {
@@ -144,14 +116,16 @@
     "save_detailed_logs": true
   },
   
-  "monitoring": {
-    "log_requests": true,
-    "log_responses": true,
-    "log_rate_changes": true,
-    "verbose_output": false,
-    "progress_updates": true,
-    "real_time_stats": true
-  },
+      "monitoring": {
+      "log_requests": true,
+      "log_responses": true,
+      "log_rate_changes": true,
+      "verbose_output": true,
+      "progress_updates": true,
+      "real_time_stats": true,
+      "fast_mode_logging": true,
+      "log_every_n_requests": 5
+    },
   
   "retry_policies": {
     "max_retries": 3,
@@ -169,9 +143,9 @@
     "console_output": true
   },
   
-  "network": {
-    "timeout": 30,
-    "max_concurrent_requests": 10,
+      "network": {
+      "timeout": 10,
+      "max_concurrent_requests": 3,
     "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
     "verify_ssl": true,
     "follow_redirects": true
