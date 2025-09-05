@@ -320,14 +320,17 @@ python -m json.tool config.json > /dev/null && echo "JSON is valid" || echo "JSO
 ## 🚀 Команды для быстрого тестирования
 
 ```bash
-# Запуск быстрого тестирования 10-секундного лимита
-python -m rate_limit_optimizer --config config.json --site upbit_api
+# АГРЕССИВНОЕ ТЕСТИРОВАНИЕ 10-СЕКУНДНОГО ЛИМИТА для цикла парсинга
+python -m rate_limit_optimizer.main --config config.json --site upbit_api --verbose
 
-# Запуск с подробными логами для отслеживания процесса
-python -m rate_limit_optimizer --config config.json --site upbit_api --debug
+# Запуск с логированием для анализа максимума запросов за 10 секунд
+python -m rate_limit_optimizer.main --config config.json --site upbit_api --verbose 2>&1 | tee "$(date +%Y-%m-%d-%H-%M-%S).log"
 
 # Мониторинг результатов в реальном времени
 tail -f rate_limit_optimizer.log
+
+# Быстрый анализ результатов
+cat results/rate_limit_results.json | jq '.detection_results | {most_restrictive, recommended_rate, limits_found}'
 ```
 
 ## 📊 Полезные алиасы

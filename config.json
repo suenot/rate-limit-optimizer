@@ -30,19 +30,19 @@
           "name": "10_seconds",
           "window_seconds": 10,
           "start_rate": 1,
-          "max_rate": 100,
-          "increment": 2,
-          "test_duration_minutes": 1,
+          "max_rate": 50,
+          "increment": 1,
+          "test_duration_minutes": 60,
           "aggressive_testing": true,
-          "description": "Быстрое определение 10-секундного лимита за 1 минуту"
+          "description": "Часовое тестирование цикла: 10 сек активно (20 запросов) + 50 сек ожидание"
         }
       ]
     },
     "batch_settings": {
-      "requests_per_batch": 5,
-      "batch_interval_seconds": 2,
+      "requests_per_batch": 20,
+      "batch_interval_seconds": 60,
       "adaptive_batching": true,
-      "fast_mode": true
+      "fast_mode": false
     },
     "endpoint_rotation": {
       "enabled": true,
