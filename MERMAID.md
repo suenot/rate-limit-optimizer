@@ -19,7 +19,9 @@ graph TB
     end
 
     subgraph "Multi-Tier Processing"
-        MinuteTier[Minute Tier<br/>1-60 запросов/мин]
+        SecondsTier[10 Seconds Tier<br/>1-50 запросов/10с]
+        MinuteTier[Minute Tier<br/>1-1000 запросов/мин]
+        FifteenMinTier[15 Minutes Tier<br/>10-5000 запросов/15мин]
         HourTier[Hour Tier<br/>50-50000 запросов/час]
         DayTier[Day Tier<br/>1000-1M запросов/день]
         Results[ResultsCollector<br/>Сбор всех лимитов]
@@ -41,13 +43,23 @@ graph TB
     Sites --> Detector
     Detector --> Tester
     
+    Tester --> SecondsTier
     Tester --> MinuteTier
+    Tester --> FifteenMinTier
     Tester --> HourTier  
     Tester --> DayTier
+    
+    SecondsTier --> API1
+    SecondsTier --> API2
+    SecondsTier --> API3
     
     MinuteTier --> API1
     MinuteTier --> API2
     MinuteTier --> API3
+    
+    FifteenMinTier --> API1
+    FifteenMinTier --> API2
+    FifteenMinTier --> API3
     
     HourTier --> API1
     HourTier --> API2
@@ -139,7 +151,7 @@ flowchart TD
     
     B --> C["⚙️ detection_settings<br/>• multi_tier_detection<br/>• batch_settings<br/>• safety_settings"]
     
-    C --> D["⏱️ Rate Limit Tiers<br/>• minute: 1-1000 req/min<br/>• hour: 50-50000 req/hour<br/>• day: 1000-1M req/day"]
+    C --> D["⏱️ Rate Limit Tiers<br/>• 10_seconds: 1-50 req/10s<br/>• minute: 1-1000 req/min<br/>• 15_minutes: 10-5000 req/15min<br/>• hour: 50-50000 req/hour<br/>• day: 1000-1M req/day"]
     
     D --> E["🎯 optimization_strategies<br/>• multi_tier_ramp<br/>• header_analysis<br/>• intelligent_probing"]
     
@@ -167,7 +179,7 @@ class TargetSite(BaseModel):
     auth: AuthConfig
 
 class RateLimitTier(BaseModel):
-    name: str = Field(..., regex=r'^(minute|15_minutes|hour|day)$')
+    name: str = Field(..., regex=r'^(10_seconds|minute|15_minutes|hour|day)$')
     window_seconds: int = Field(gt=0)
     start_rate: int = Field(gt=0)
     max_rate: int = Field(gt=0)

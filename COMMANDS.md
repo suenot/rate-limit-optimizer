@@ -276,6 +276,26 @@ export CERT_PATH=""
 ## 📊 Полезные алиасы
 
 ```bash
+# Проверка валидности JSON конфигурации
+python -m json.tool config.json > /dev/null && echo "JSON is valid" || echo "JSON is invalid"
+```
+
+## 🔧 Последние изменения
+
+```bash
+# Добавлен новый tier "10_seconds" с интервалом 10 секунд
+# Обновлен tier_order: ["10_seconds", "minute", "15_minutes", "hour", "day"]
+# Конфигурация 10_seconds tier:
+# - window_seconds: 10
+# - start_rate: 1
+# - max_rate: 50
+# - increment: 1
+# - test_duration_minutes: 1
+```
+
+## 📊 Полезные алиасы
+
+```bash
 # Добавить в ~/.bashrc или ~/.zshrc
 alias rlo-start="python -m rate_limit_optimizer --config config.json"
 alias rlo-debug="python -m rate_limit_optimizer --config config.json --debug"

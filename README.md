@@ -102,6 +102,13 @@ python -m rate_limit_optimizer --config config.local.json --debug
       "enabled": true,
       "tiers_to_test": [
         {
+          "name": "10_seconds",
+          "window_seconds": 10,
+          "start_rate": 1,
+          "max_rate": 50,
+          "test_duration_minutes": 1
+        },
+        {
           "name": "minute",
           "window_seconds": 60,
           "start_rate": 1,
@@ -128,7 +135,7 @@ python -m rate_limit_optimizer --config config.local.json --debug
   "optimization_strategies": {
     "multi_tier_ramp": {
       "enabled": true,
-      "tier_order": ["minute", "hour", "day"],
+      "tier_order": ["10_seconds", "minute", "15_minutes", "hour", "day"],
       "stop_on_first_limit": false,
       "adaptive_increment": true
     },
