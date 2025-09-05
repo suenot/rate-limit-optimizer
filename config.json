@@ -4,11 +4,9 @@
   
   "target_sites": {
     "upbit_api": {
-      "base_url": "https://api.upbit.com",
+      "base_url": "https://api-manager.upbit.com",
       "endpoints": [
-        "/v1/market/all",
-        "/v1/ticker",
-        "/v1/orderbook"
+        "/api/v1/announcements"
       ],
       "headers": {
         "User-Agent": "RateLimitOptimizer/1.0",
@@ -93,6 +91,14 @@
       "batch_interval_seconds": 30,
       "adaptive_batching": true
     },
+    "endpoint_rotation": {
+      "enabled": true,
+      "strategy": "random",
+      "rotation_interval_requests": 5,
+      "weight_distribution": "equal",
+      "avoid_patterns": true,
+      "description": "Ротация endpoints для имитации реального трафика и избежания детекции"
+    },
     "safety_settings": {
       "safety_margin_percent": 20,
       "backoff_multiplier": 2.0,
@@ -168,7 +174,7 @@
     "max_retries": 3,
     "base_delay": 1.0,
     "backoff_multiplier": 2.0,
-    "max_delay": 30.0,
+    "max_delay": 61.0,
     "retry_on_codes": [429, 502, 503, 504],
     "retry_on_timeout": true
   },
@@ -192,7 +198,7 @@
     "enabled": true,
     "provider": "openrouter",
     "model": "anthropic/claude-3.5-sonnet",
-    "api_key_env": "OPENROUTER_API_KEY",
+    "api_key_env": "${OPENROUTER_API_KEY}",
     "base_url": "https://openrouter.ai/api/v1",
     "settings": {
       "temperature": 0.1,

@@ -28,6 +28,12 @@ python -m rate_limit_optimizer --config config.json --no-ai
 # Запуск в debug режиме
 python -m rate_limit_optimizer --config config.json --debug
 
+# Запуск с отключенной ротацией endpoints (тестирование только одного)
+python -m rate_limit_optimizer --config config.json --single-endpoint
+
+# Запуск с кастомной стратегией ротации
+python -m rate_limit_optimizer --config config.json --rotation-strategy sequential
+
 # Запуск с кастомной конфигурацией
 python -m rate_limit_optimizer --config custom_config.json --log-level DEBUG
 
