@@ -1,0 +1,55 @@
+# Core dependencies
+pydantic>=2.0.0
+aiohttp>=3.8.0
+asyncio-throttle>=1.0.0
+
+# AI and ML
+openai>=1.0.0  # For OpenRouter compatibility
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.24.0
+
+# Configuration and serialization
+PyYAML>=6.0
+python-dotenv>=1.0.0
+
+# Networking and HTTP
+httpx>=0.24.0
+requests>=2.31.0
+
+# Performance monitoring
+psutil>=5.9.0
+memory-profiler>=0.60.0
+
+# Encryption and security
+cryptography>=41.0.0
+
+# Compression
+gzip-reader>=0.1.0
+
+# Excel export
+openpyxl>=3.1.0
+xlsxwriter>=3.1.0
+
+# Logging and monitoring
+structlog>=23.0.0
+
+# Testing (for development)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.3.0
+pytest-json-report>=1.5.0
+pytest-benchmark>=4.0.0
+aioresponses>=0.7.4
+
+# Development tools
+black>=23.0.0
+isort>=5.12.0
+flake8>=6.0.0
+mypy>=1.5.0
+
+# Documentation
+mkdocs>=1.5.0
+mkdocs-material>=9.0.0

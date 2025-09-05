@@ -19,26 +19,26 @@ pip install -e .
 
 ### Запуск системы
 ```bash
-# Запуск основного оптимизатора с AI рекомендациями
-python -m rate_limit_optimizer --config config.json
+# Основной запуск через модуль
+python -m rate_limit_optimizer.main --config config.json --site example_api
 
-# Запуск без AI рекомендаций (быстрее)
-python -m rate_limit_optimizer --config config.json --no-ai
+# Через установленную команду
+rate-limit-optimizer --config config.json --site example_api
 
-# Запуск в debug режиме
-python -m rate_limit_optimizer --config config.json --debug
+# Короткая команда
+rlo --config config.json --site example_api
 
-# Запуск с отключенной ротацией endpoints (тестирование только одного)
-python -m rate_limit_optimizer --config config.json --single-endpoint
+# С дополнительными опциями
+rlo --config config.json --site example_api --strategy multi_tier_ramp --output results.json --verbose --no-ai
 
-# Запуск с кастомной стратегией ротации
-python -m rate_limit_optimizer --config config.json --rotation-strategy sequential
+# Установка пакета
+pip install -e .
 
-# Запуск с кастомной конфигурацией
-python -m rate_limit_optimizer --config custom_config.json --log-level DEBUG
+# Установка с зависимостями для разработки
+pip install -e ".[dev]"
 
-# Запуск только AI анализа для существующих результатов
-python -m rate_limit_optimizer --analyze-only results.json
+# Установка всех зависимостей
+pip install -e ".[all]"
 ```
 
 ### Мониторинг и метрики
@@ -58,17 +58,38 @@ python -m rate_limit_optimizer.cache --stats
 
 ### Тестирование
 ```bash
-# Запуск всех тестов
-pytest tests/ -v
+# Установка зависимостей для тестирования
+pip install -r tests/requirements.txt
 
-# Запуск тестов с покрытием
-pytest tests/ --cov=rate_limit_optimizer --cov-report=html
-
-# Запуск интеграционных тестов
+# Запуск всех интеграционных тестов
 pytest tests/integration/ -v
 
-# Запуск тестов производительности
-pytest tests/performance/ -v --benchmark-only
+# Тесты с покрытием кода
+pytest tests/integration/ --cov=rate_limit_optimizer --cov-report=html
+
+# Параллельный запуск тестов
+pytest tests/integration/ -n auto -v
+
+# Конкретные категории тестов
+pytest tests/integration/test_config_integration.py -v          # Конфигурация
+pytest tests/integration/test_rate_limit_detection.py -v       # Определение лимитов
+pytest tests/integration/test_multi_tier_detection.py -v       # Многоуровневое определение
+pytest tests/integration/test_ai_integration.py -v -m ai       # AI рекомендации
+pytest tests/integration/test_endpoint_rotation.py -v          # Ротация endpoints
+pytest tests/integration/test_error_handling.py -v             # Обработка ошибок
+pytest tests/integration/test_results_storage.py -v            # Сохранение результатов
+pytest tests/integration/test_performance.py -v -m performance # Производительность
+
+# Фильтрация по маркерам
+pytest tests/integration/ -m "not slow" -v                     # Быстрые тесты
+pytest tests/integration/ -m "performance" -v                  # Тесты производительности
+pytest tests/integration/ -m "not network" -v                  # Без сети
+pytest tests/integration/ -m "ai" -v                           # AI тесты
+
+# Отчеты
+pytest tests/integration/ --cov=rate_limit_optimizer --cov-report=html
+pytest tests/integration/ --json-report --json-report-file=test_report.json
+pytest tests/integration/test_performance.py --benchmark-only --benchmark-json=benchmark.json
 ```
 
 ### Линтинг и форматирование

@@ -51,6 +51,9 @@ source venv/bin/activate  # Linux/Mac
 # Установка зависимостей
 pip install -r requirements.txt
 
+# Или установка как пакет
+pip install -e .
+
 # Настройка переменных окружения
 export OPENROUTER_API_KEY="your_openrouter_api_key_here"
 ```
@@ -67,14 +70,54 @@ cp config.json config.local.json
 ### Запуск
 
 ```bash
-# Запуск определения лимитов для всех сайтов
-python -m rate_limit_optimizer --config config.local.json
+# Через модуль Python
+python -m rate_limit_optimizer.main --config config.json --site example_api
 
-# Запуск для конкретного сайта
-python -m rate_limit_optimizer --config config.local.json --site upbit_api
+# Через установленную команду
+rate-limit-optimizer --config config.json --site example_api
 
-# Запуск в debug режиме с подробными логами
-python -m rate_limit_optimizer --config config.local.json --debug
+# Или короткая команда
+rlo --config config.json --site example_api --verbose
+
+# Дополнительные опции
+rlo --config config.json --site example_api --strategy multi_tier_ramp --output results.json --no-ai
+```
+
+### Программное использование
+
+```python
+import asyncio
+from pathlib import Path
+from rate_limit_optimizer import RateLimitOptimizer
+
+async def main():
+    # Инициализация оптимизатора
+    optimizer = RateLimitOptimizer(
+        config_path=Path("config.json"),
+        enable_ai=True,
+        enable_performance_monitoring=True
+    )
+    
+    # Определение rate limits
+    result = await optimizer.detect_rate_limits(
+        site_name="example_api",
+        strategy="multi_tier_ramp",
+        validate_consistency=True
+    )
+    
+    # Вывод результатов
+    print(f"Самый строгий лимит: {result.detection_results.most_restrictive}")
+    print(f"Рекомендуемая частота: {result.detection_results.recommended_rate}")
+    
+    # Получение AI рекомендаций
+    if result.ai_recommendations:
+        print(f"AI стратегия: {result.ai_recommendations.analysis.optimal_usage_strategy}")
+    
+    # Очистка ресурсов
+    await optimizer.cleanup()
+
+# Запуск
+asyncio.run(main())
 ```
 
 ## 📋 Конфигурация
@@ -304,18 +347,62 @@ grep "upbit_api" rate_limit_optimizer.log
 
 ## 🧪 Тестирование
 
+### Интеграционные тесты
+
+Полный набор интеграционных тестов покрывает все компоненты системы:
+
 ```bash
-# Запуск всех тестов
-pytest tests/ -v
+# Установка зависимостей для тестирования
+pip install -r tests/requirements.txt
 
-# Тесты с покрытием
-pytest tests/ --cov=rate_limit_optimizer --cov-report=html
-
-# Интеграционные тесты
+# Запуск всех интеграционных тестов
 pytest tests/integration/ -v
 
+# Тесты с покрытием кода
+pytest tests/integration/ --cov=rate_limit_optimizer --cov-report=html
+
+# Параллельный запуск тестов
+pytest tests/integration/ -n auto -v
+
+# Конкретные категории тестов
+pytest tests/integration/test_config_integration.py -v          # Тесты конфигурации
+pytest tests/integration/test_rate_limit_detection.py -v       # Тесты определения лимитов
+pytest tests/integration/test_multi_tier_detection.py -v       # Тесты многоуровневого определения
+pytest tests/integration/test_ai_integration.py -v -m ai       # Тесты AI рекомендаций
+pytest tests/integration/test_endpoint_rotation.py -v          # Тесты ротации endpoints
+pytest tests/integration/test_error_handling.py -v             # Тесты обработки ошибок
+pytest tests/integration/test_results_storage.py -v            # Тесты сохранения результатов
+pytest tests/integration/test_performance.py -v -m performance # Тесты производительности
+```
+
+### Фильтрация тестов по маркерам
+
+```bash
+# Быстрые тесты (исключить медленные)
+pytest tests/integration/ -m "not slow" -v
+
 # Тесты производительности
-pytest tests/performance/ -v --benchmark-only
+pytest tests/integration/ -m "performance" -v
+
+# Тесты без требования сети
+pytest tests/integration/ -m "not network" -v
+
+# Только AI тесты (требует OPENROUTER_API_KEY)
+pytest tests/integration/ -m "ai" -v
+```
+
+### Отчеты и метрики
+
+```bash
+# HTML отчет покрытия
+pytest tests/integration/ --cov=rate_limit_optimizer --cov-report=html
+open htmlcov/index.html
+
+# JSON отчет тестов
+pytest tests/integration/ --json-report --json-report-file=test_report.json
+
+# Бенчмарк производительности
+pytest tests/integration/test_performance.py --benchmark-only --benchmark-json=benchmark.json
 ```
 
 ## 🐳 Docker
